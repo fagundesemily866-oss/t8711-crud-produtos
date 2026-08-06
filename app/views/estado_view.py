@@ -1,91 +1,314 @@
-from colorama import init, Fore, Style
+from app.models.estado import Estado
 
-init(autoreset=True)
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
 
 
-class Estado_Terminal_View:
 
-    def __init__(self):
-        self.titulo_sistema = "=== CRUD DE ESTADOS (MVC) ==="
+class Estado_View:
 
-    def renderizar_menu(self):
+    def __init__(self, root, controller):
+        self.root = root
+        self.controller = controller
+        self.configurar_janela()
+        self.criar_componentes()
+        self.configurar_treeview()
+        self.configurar_eventos()
 
-        print(Fore.CYAN + Style.BRIGHT + self.titulo_sistema)
-        print("1 - Cadastrar estado")
-        print("2 - Listar estados")
-        print("3 - Atualizar estado")
-        print("4 - Excluir estado")
-        print("0 - Sair")
-        print(Fore.CYAN + "=" * 50)
+    def configurar_janela(self):
+        self.root.title("CRUD de Estados")
+        self.root.geometry("800x600")
+        self.root.resizable(False, False)
+  
 
-        try:
-            return int(input("Escolha uma opção: "))
-        except ValueError:
-            return -1
+    def criar_componentes(self):
+        self.lbl_titulo = tk.Label(
+            self.root,
+            text = "Cadastro de Estados",
+            font = ("Arial", 16, "bold"),
+        )
+        self.lbl_titulo.grid(
+            row = 0,
+            column = 0,
+            columnspan = 4,
+            padx = 5,
+            pady = 5
+        )
+        self.frm_dados = tk.LabelFrame(
+            self.root,
+            text = "Dados do Estado"
+        )
+        self.frm_dados.grid(
+            row = 1,
+            column = 0,
+            columnspan=4,
+            padx = 10,
+            pady = 5,
+            sticky = "ew"
+        )
+        self.lbl_Nome= tk.Label(
+            self.frm_dados,
+            text = "Nome:"
+        )
+        self.lbl_Nome.grid(
+            row = 0,
+            column = 0,
+            padx = 5,
+            pady = 5,
+            sticky = "w"
+        )
+        self.txt_Nome = tk.Entry(
+            self.frm_dados,
+            width = 10,
+            state = "readonly"
+        )
+        self.txt_Nome.grid(
+            row = 0,
+            column= 1,
+            padx = 5,
+            pady = 5,
+            sticky = "w"
+        )
+        self.lbl_Sigla = tk.Label(
+            self.frm_dados,
+            text = "Sigla:"
+        )
+        self.lbl_.grid(
+            row = 1,
+            column = 0,
+            padx = 5,
+            pady = 5,
+            sticky = "w"
+        )
+        self.txt_Sigla = tk.Entry(
+            self.frm_dados,
+            width = 40
+        )
+        self.txt_Sigla.grid(
+            row = 1,
+            column = 1,
+            padx = 5,
+            pady = 5,
+            sticky = "w"
+        )
+        self.frm_botoes = tk.Frame(
+            self.frm_dados,
+            border = 2,
+            relief = "groove"
+        )
+        self.frm_botoes.grid(
+            row = 4,
+            column = 0,
+            padx = 10,
+            pady = 5,
+            columnspan = 4,
+        )
+        self.btn_novo = tk.Button(
+            self.frm_botoes,
+            text = "Novo",
+            width = 15
+        )
+        self.btn_novo.grid(
+            row = 0,
+            column = 0,
+            padx = 5,
+            pady = 5
+        )
+        self.btn_salvar = tk.Button(
+            self.frm_botoes,
+            text = "Salvar",
+            width = 15
+        )
+        self.btn_salvar.grid(
+            row = 0,
+            column = 1,
+            padx = 5,
+            pady = 5
+        )        
+        self.btn_alterar = tk.Button(
+            self.frm_botoes,
+            text = "Alterar",
+            width = 15
+        )
+        self.btn_alterar.grid(
+            row = 0,
+            column = 2,
+            padx = 5,
+            pady = 5
+        )        
+        self.btn_excluir = tk.Button(
+            self.frm_botoes,
+            text = "Excluir",
+            width = 15
+        )
+        self.btn_excluir.grid(
+            row = 0,
+            column = 3,
+            padx = 5,
+            pady = 5
+        )   
+        self.btn_fechar = tk.Button(
+            self.frm_botoes,
+            text = "Fechar",
+            width = 15
+        )
+        self.btn_fechar.grid(
+            row = 0,
+            column = 4,
+            padx = 5,
+            pady = 5
+        )
+        self.tbl_Estado = ttk.Treeview(
+            self.root,
+            height = 10
+        )    
+        self.tbl_Estado.grid(
+            row = 3,
+            column = 0,
+            columnspan = 4,
+            padx = 10,
+            pady = 10,
+            sticky = "nsew"
+        )  
 
-    def ler_campo(self, rotulo, valor_atual=None):
 
-        if valor_atual is not None:
-            prompt = f"{rotulo} [{Fore.GREEN}{valor_atual}{Style.RESET_ALL}]: "
-        else:
-            prompt = f"{rotulo}: "
-
-        valor = input(prompt)
-
-        if valor == "" and valor_atual is not None:
-            return valor_atual
-
-        return valor
-
-    def ler_dados_estado(self, estado_existente=None):
-
-        print(Fore.CYAN + Style.BRIGHT + "=== DADOS DO ESTADO ===")
-
-        nome = self.ler_campo(
+    def configurar_treeview(self):
+        self.tbl_Estado["columns"] = (
             "Nome",
-            estado_existente.nome if estado_existente else None
+            "Sigla"
+            
         )
-
-        sigla = self.ler_campo(
+        self.tbl_Estado.column(
+            "#0",
+            width = 0,
+            stretch = False
+        )
+        self.tbl_Estado.column(
+            "Nome",
+            width =10
+        )
+        self.tbl_Estado.column(
             "Sigla",
-            estado_existente.sigla if estado_existente else None
+            width = 50
+        )
+        self.tbl_Estado.heading(
+            "Nome",
+            text = "Nome"
+        )
+        self.tbl_Estado.heading(
+            "Razao Social",
+            text = "Razao Social"
+        )
+        self.tbl_fornecedores.heading(
+            "cnpj",
+            text = "CNPJ"
+        )
+    def configurar_eventos(self):
+        self.btn_novo.config(
+            command = self.controller.new
+        )
+        self.btn_salvar.config(
+            command = self.controller
+        )
+        self.btn_alterar.config(
+            command = self.controller.update
+        )
+        self.btn_excluir.config(
+            command = self.controller.delete
+        )
+        self.btn_fechar.config(
+            command= self.fechar
+        )
+        self.tbl_fornecedores.bind(
+            "<<TreeviewSelect>>",
+            self.controller.selecionar_fornecedor
+        )
+    def preencher_campos(self):
+        
+        self.limpar_campos()
+        self.txt_id.config(state = "normal")
+        self.txt_id.insert(
+            0,
+            str(Fornecedor.id)
+        )
+        self.txt_id.config(state = "readonly")
+
+        self.txt_razao_social.insert(
+            0,
+            Fornecedor.razao_social
         )
 
-        return nome, sigla
+        self.txt_nome_fantasia.insert(
+            0,
+            Fornecedor.nome_fantasia
+        )
 
-    def ler_id(self):
+        self.txt_cnpj.insert(
+            0,
+            Fornecedor.cnpj
+        )
 
-        return input("Digite o ID do estado: ")
+        self.txt_sla.insert(
+            0,
+            str(Fornecedor.sla_atendimento)
+        ) 
 
-    def exibir_estados(self, estados):
+    def limpar_campos(self):
+        self.txt_id.delete(0, tk.END)
+        self.txt_id_Razao_Social.delete(0, tk.END)
+        self.txt_id_nome_fantasia.delete(0, tk.END)
+        self.txt_id_cnpj.delete(0, tk.END)
+        self.txt_id_sla_.delete(0, tk.END)
 
-        print(Fore.YELLOW + "\n--- TABELA DE ESTADOS ---")
+    def confirmar_exclusao(self):
 
-        if not estados:
-            print("Nenhum estado cadastrado.")
-            return
+        return messagebox.askyesno(
+            "Confirmação",
+            "Deseja realmente excluir este Estado?"
+        )
 
-        print(f"{'ID':<5} | {'NOME':<30} | {'SIGLA':<5}")
-        print("-" * 48)
+    def ler_dados_Estado(self):
+        Nome = self.txt_Nome.get()
+        Sigla = self.txt_Sigla.get()
+        return Nome, Sigla
+    
+    def limpar_treeview(self):
+        for item in self.tbl_Estado.get_children():
+            self.tbl_Estado.delete(item)
 
-        for estado in estados:
 
-            print(
-                f"{estado.id:<5} | "
-                f"{estado.nome:<30} | "
-                f"{estado.sigla:<5}"
+    def exibir_mensagem(self, mensagem, sucesso = True):
+        if sucesso:
+            messagebox.showinfo(
+                "Mini ERP",
+                mensagem
+            )
+        else:
+            messagebox.showerror(
+                   "Mini ERP",
+                mensagem
             )
 
-        print("-" * 48)
+    def exibir_Estados(self, Estado):
 
-    def exibir_mensagem(self, mensagem, sucesso=True):
+        self.limpar_treeview()
+        for Estado in Estado:
+            self.tbl_Estado.insert(
+                "",
+                tk.END,
+                values=(
+                    Estado.Nome,
+                    Estado.Sigla
+                    
+                )
+            )
 
-        cor = Fore.GREEN if sucesso else Fore.RED
 
-        print(cor + f"\n[STATUS] {mensagem}\n")
+    def fechar(self):
+        self.root.destroy()
 
-        self.aguardar_entrada()
-
-    def aguardar_entrada(self):
-
-        input(Fore.WHITE + "Pressione Enter para continuar...")
+    def iniciar(self):
+        self.controller.carregar_fornecedores()
+        self.controller.get_all()
+        self.root.mainloop()

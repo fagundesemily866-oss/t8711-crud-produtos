@@ -1,8 +1,4 @@
 
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parents[2]))
-
 from app.models.fornecedor import Fornecedor
 
 import tkinter as tk
@@ -291,15 +287,106 @@ class Fornecedor_View:
         self.btn_excluir.config(
             command = self.controller.delete
         )
+        self.btn_fechar.config(
+            command= self.fechar
+        )
+        self.tbl_fornecedores.bind(
+            "<<TreeviewSelect>>",
+            self.controller.selecionar_fornecedor
+        )
+    def preencher_campos(self):
+        
+        self.limpar_campos()
+        self.txt_id.config(state = "normal")
+        self.txt_id.insert(
+            0,
+            str(Fornecedor.id)
+        )
+        self.txt_id.config(state = "readonly")
+
+        self.txt_razao_social.insert(
+            0,
+            Fornecedor.razao_social
+        )
+
+        self.txt_nome_fantasia.insert(
+            0,
+            Fornecedor.nome_fantasia
+        )
+
+        self.txt_cnpj.insert(
+            0,
+            Fornecedor.cnpj
+        )
+
+        self.txt_sla.insert(
+            0,
+            str(Fornecedor.sla_atendimento)
+        ) 
+
     def limpar_campos(self):
         self.txt_id.delete(0, tk.END)
         self.txt_id_Razao_Social.delete(0, tk.END)
         self.txt_id_nome_fantasia.delete(0, tk.END)
         self.txt_id_cnpj.delete(0, tk.END)
-        self.txt_id_sla_.delete(0, tk.END)              
+        self.txt_id_sla_.delete(0, tk.END)
+
+    
+    def get_id_selecionado(self):
+        item = self.tbl_fornecedores.selection()[0]
+
+        return self.tbl_fornecedores.item(item)["value"][0]
+
+    def confirmar_exclusao(self):
+
+        return messagebox.askyesno(
+            "Confirmação",
+            "Deseja realmente excluir este fornecedor?"
+        )
+
+    def ler_dados_fornecedor(self):
+        razao_social = self.txt_razao_social.get()
+        nome_fantasia = self.txt_nome_fantasia.get()
+        cnpj = self.txt_cnpj.get()
+        sla = int(self.txt_sla.get())
+        return razao_social, nome_fantasia, cnpj, sla
+    
+    def limpar_treeview(self):
+        for item in self.tbl_fornecedores.get_children():
+            self.tbl_fornecedores.delete(item)
+
+
+    def exibir_mensagem(self, mensagem, sucesso = True):
+        if sucesso:
+            messagebox.showinfo(
+                "Mini ERP",
+                mensagem
+            )
+        else:
+            messagebox.showerror(
+                   "Mini ERP",
+                mensagem
+            )
+
+    def exibir_fornecedores(self, fornecedores):
+
+        self.limpar_treeview()
+        for fornecedor in fornecedores:
+            self.tbl_fornecedores.insert(
+                "",
+                tk.END,
+                values=(
+                    fornecedor.id,
+                    fornecedor.razao_social,
+                    fornecedor.cnpj
+                )
+            )
+
+
+    def fechar(self):
+        self.root.destroy()
 
     def iniciar(self):
+        self.controller.carregar_fornecedores()
+        self.controller.get_all()
         self.root.mainloop()
-
-f = Fornecedor_View(tk.Tk())
-f.iniciar()
